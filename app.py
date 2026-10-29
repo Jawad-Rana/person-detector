@@ -21,7 +21,8 @@ PROJECT_TITLE = "Person Detection System"
 PROJECT_SUBTITLE = "Deep-learning object detection with Faster R-CNN"
 DEVELOPER = "Rana Jawad"
 COURSE = "Computer Vision Project"
-DATASET_URL = "https://drive.google.com/drive/folders/10d_w51uRXeIsoWih5UTTd6MxENb0CRpr?usp=drive_link"
+MODEL_URL = "https://drive.google.com/file/d/1M0uYhKeZBYrOL7uYcsD7xxU8OUtHaunz/view?usp=drive_link"
+DATASET_URL ="https://drive.google.com/drive/folders/10d_w51uRXeIsoWih5UTTd6MxENb0CRpr?usp=drive_link"
 MODEL_PATH = "rcnn_model.pth"
 MODEL_DRIVE_ID = "1M0uYhKeZBYrOL7uYcsD7xxU8OUtHaunz"  # rcnn_model.pth on Google Drive (shared: anyone with link)
 CLASS_NAME = "Person"
@@ -58,8 +59,12 @@ html, body, [class*="css"], .stMarkdown, .stText { font-family: 'Poppins', sans-
 .hero h1 { color: #fff; font-size: 40px; font-weight: 700; margin: 14px 0 6px; line-height: 1.15; }
 .hero p { color: #cbd5e1; font-size: 16px; margin: 0; }
 .chips { margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-row { position: relative; z-index: 1; display: flex; gap: 12px; flex-wrap: wrap; margin-top: 22px; }
+.ds-btn.ghost { background: rgba(255,255,255,.1); color: #fff !important; border: 1px solid rgba(255,255,255,.4);
+  box-shadow: none; }
+.ds-btn.ghost:hover { background: rgba(255,255,255,.18); box-shadow: none; }
 .ds-btn {
-  position: relative; z-index: 1; display: inline-block; margin-top: 22px;
+  position: relative; z-index: 1; display: inline-block;
   background: #22d3ee; color: #0f172a !important; text-decoration: none !important;
   font-weight: 600; font-size: 15px; padding: 11px 20px; border-radius: 12px;
   box-shadow: 0 8px 20px rgba(34,211,238,.35); transition: transform .15s, box-shadow .15s;
@@ -117,14 +122,17 @@ def load_model():
     return model
 
 
-def detect(model, image, threshold):
+def detect(model, image, threshold, overlap=0.3):
     tensor = T.ToTensor()(image).unsqueeze(0)
     start = time.perf_counter()
     with torch.no_grad():
         out = model(tensor)[0]
     elapsed = time.perf_counter() - start
     keep = out["scores"] >= threshold
-    return out["boxes"][keep].numpy(), out["scores"][keep].numpy(), elapsed
+    boxes, scores = out["boxes"][keep], out["scores"][keep]
+    # remove duplicate boxes on the same person (stricter than the model's built-in NMS)
+    keep = torchvision.ops.nms(boxes, scores, overlap)
+    return boxes[keep].numpy(), scores[keep].numpy(), elapsed
 
 
 def get_font(size):
@@ -171,8 +179,10 @@ def metric(col, label, value):
 # ------------------------------------------------------------------
 with st.sidebar:
     st.markdown("## 🎯 Control Panel")
-    threshold = st.slider("Confidence threshold", 0.10, 0.95, 0.50, 0.05,
+    threshold = st.slider("Confidence threshold", 0.10, 0.95, 0.60, 0.05,
                           help="Only detections above this confidence are shown.")
+    overlap = st.slider("Duplicate box filter (IoU)", 0.10, 0.90, 0.30, 0.05,
+                        help="Lower = removes more overlapping boxes on the same person.")
     show_scores = st.toggle("Show confidence on boxes", value=True)
     st.markdown("---")
     st.markdown("### 🧠 Model")
@@ -183,7 +193,8 @@ with st.sidebar:
 <div class="side-card"><b>Detects</b><br>Person (all people in the image)</div>
 <div class="side-card"><b>Training</b><br>Fine-tuned on a custom person dataset</div>
 <div class="side-card"><b>Dataset</b><br><a href="{DATASET_URL}" target="_blank" rel="noopener">📂 Open dataset on Google Drive ↗</a></div>
-""".replace("{DATASET_URL}", DATASET_URL),
+<div class="side-card"><b>Trained model</b><br><a href="{MODEL_URL}" target="_blank" rel="noopener">🧠 rcnn_model.pth on Google Drive ↗</a></div>
+""".replace("{DATASET_URL}", DATASET_URL).replace("{MODEL_URL}", MODEL_URL),
         unsafe_allow_html=True,
     )
     st.markdown("### 📌 How it works")
@@ -204,7 +215,10 @@ st.markdown(
     <span class="chip">⚡ Faster R-CNN</span><span class="chip">🧱 ResNet50-FPN</span>
     <span class="chip">🔥 PyTorch</span><span class="chip">👤 Multi-person detection</span>
   </div>
-  <a class="ds-btn" href="{DATASET_URL}" target="_blank" rel="noopener">📂 View Our Dataset (Google Drive) ↗</a>
+  <div class="btn-row">
+    <a class="ds-btn" href="{DATASET_URL}" target="_blank" rel="noopener">📂 View Our Dataset ↗</a>
+    <a class="ds-btn ghost" href="{MODEL_URL}" target="_blank" rel="noopener">🧠 Trained Model (rcnn_model.pth) ↗</a>
+  </div>
 </div>
 """,
     unsafe_allow_html=True,
@@ -241,7 +255,7 @@ else:
         st.stop()
 
     with st.spinner("Detecting people…"):
-        boxes, scores, elapsed = detect(model, image, threshold)
+        boxes, scores, elapsed = detect(model, image, threshold, overlap)
     result = draw_boxes(image, boxes, scores, show_scores)
 
     c1, c2, c3, c4 = st.columns(4)
