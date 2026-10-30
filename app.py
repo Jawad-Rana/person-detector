@@ -21,7 +21,8 @@ PROJECT_TITLE = "Person Detection System"
 PROJECT_SUBTITLE = "Deep-learning object detection with Faster R-CNN"
 DEVELOPER = "Rana Jawad"
 COURSE = "Computer Vision Project"
-MODEL_URL = "https://drive.google.com/file/d/1M0uYhKeZBYrOL7uYcsD7xxU8OUtHaunz/view?usp=drive_link"
+VIDEO_URL = "https://youtu.be/XOQXmIaxoZA"
+MODEL_URL ="https://drive.google.com/file/d/1M0uYhKeZBYrOL7uYcsD7xxU8OUtHaunz/view?usp=drive_link"
 DATASET_URL ="https://drive.google.com/drive/folders/10d_w51uRXeIsoWih5UTTd6MxENb0CRpr?usp=drive_link"
 MODEL_PATH = "rcnn_model.pth"
 MODEL_DRIVE_ID = "1M0uYhKeZBYrOL7uYcsD7xxU8OUtHaunz"  # rcnn_model.pth on Google Drive (shared: anyone with link)
@@ -62,6 +63,8 @@ html, body, [class*="css"], .stMarkdown, .stText { font-family: 'Poppins', sans-
 .btn-row { position: relative; z-index: 1; display: flex; gap: 12px; flex-wrap: wrap; margin-top: 22px; }
 .ds-btn.ghost { background: rgba(255,255,255,.1); color: #fff !important; border: 1px solid rgba(255,255,255,.4);
   box-shadow: none; }
+.ds-btn.yt { background: #ef4444; color: #fff !important; box-shadow: 0 8px 20px rgba(239,68,68,.35); }
+.ds-btn.yt:hover { box-shadow: 0 12px 26px rgba(239,68,68,.5); }
 .ds-btn.ghost:hover { background: rgba(255,255,255,.18); box-shadow: none; }
 .ds-btn {
   position: relative; z-index: 1; display: inline-block;
@@ -194,7 +197,8 @@ with st.sidebar:
 <div class="side-card"><b>Training</b><br>Fine-tuned on a custom person dataset</div>
 <div class="side-card"><b>Dataset</b><br><a href="{DATASET_URL}" target="_blank" rel="noopener">📂 Open dataset on Google Drive ↗</a></div>
 <div class="side-card"><b>Trained model</b><br><a href="{MODEL_URL}" target="_blank" rel="noopener">🧠 rcnn_model.pth on Google Drive ↗</a></div>
-""".replace("{DATASET_URL}", DATASET_URL).replace("{MODEL_URL}", MODEL_URL),
+<div class="side-card"><b>Demo video</b><br><a href="{VIDEO_URL}" target="_blank" rel="noopener">▶ Watch on YouTube ↗</a></div>
+""".replace("{DATASET_URL}", DATASET_URL).replace("{MODEL_URL}", MODEL_URL).replace("{VIDEO_URL}", VIDEO_URL),
         unsafe_allow_html=True,
     )
     st.markdown("### 📌 How it works")
@@ -218,6 +222,7 @@ st.markdown(
   <div class="btn-row">
     <a class="ds-btn" href="{DATASET_URL}" target="_blank" rel="noopener">📂 View Our Dataset ↗</a>
     <a class="ds-btn ghost" href="{MODEL_URL}" target="_blank" rel="noopener">🧠 Trained Model (rcnn_model.pth) ↗</a>
+    <a class="ds-btn yt" href="{VIDEO_URL}" target="_blank" rel="noopener">▶ Watch Demo Video ↗</a>
   </div>
 </div>
 """,
