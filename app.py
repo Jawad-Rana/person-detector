@@ -22,6 +22,7 @@ PROJECT_SUBTITLE = "Deep-learning object detection with Faster R-CNN"
 DEVELOPER = "Rana Jawad"
 COURSE = "Computer Vision Project"
 VIDEO_URL = "https://youtu.be/XOQXmIaxoZA"
+LINKEDIN_URL = "https://www.linkedin.com/feed/update/urn:li:activity:7522368200567578625/"
 MODEL_URL ="https://drive.google.com/file/d/1M0uYhKeZBYrOL7uYcsD7xxU8OUtHaunz/view?usp=drive_link"
 DATASET_URL ="https://drive.google.com/drive/folders/10d_w51uRXeIsoWih5UTTd6MxENb0CRpr?usp=drive_link"
 MODEL_PATH = "rcnn_model.pth"
@@ -60,6 +61,25 @@ html, body, [class*="css"], .stMarkdown, .stText { font-family: 'Poppins', sans-
 .hero h1 { color: #fff; font-size: 40px; font-weight: 700; margin: 14px 0 6px; line-height: 1.15; }
 .hero p { color: #cbd5e1; font-size: 16px; margin: 0; }
 .chips { margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap; }
+.hero-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1.35fr 1fr; gap: 32px; align-items: center; }
+@media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; } }
+.res-panel { background: rgba(15,23,42,.55); border: 1px solid rgba(148,163,184,.28); border-radius: 18px;
+  padding: 16px; backdrop-filter: blur(6px); }
+.res-head { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: #94a3b8;
+  font-weight: 600; margin: 2px 4px 12px; }
+.lt-wrap { display: flex; flex-direction: column; gap: 10px; }
+.lt { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 12px;
+  text-decoration: none !important; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+  border-left: 3px solid var(--ac); transition: background .15s, transform .15s, border-color .15s; }
+.lt:hover { background: rgba(255,255,255,.11); transform: translateX(3px); border-color: var(--ac); }
+.lt-ic { width: 38px; height: 38px; flex: none; border-radius: 10px; display: grid; place-items: center;
+  background: rgba(255,255,255,.07); }
+.lt-tx { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
+.lt-tx b { color: #f8fafc; font-size: 15px; font-weight: 600; }
+.lt-tx small { color: #94a3b8; font-size: 12.5px; }
+.lt-ar { margin-left: auto; color: var(--ac); font-size: 18px; font-weight: 600; }
+.lt-side { padding: 9px 11px; }
+.lt-side .lt-ic { width: 32px; height: 32px; }
 .btn-row { position: relative; z-index: 1; display: flex; gap: 12px; flex-wrap: wrap; margin-top: 22px; }
 .ds-btn.ghost { background: rgba(255,255,255,.1); color: #fff !important; border: 1px solid rgba(255,255,255,.4);
   box-shadow: none; }
@@ -170,6 +190,35 @@ def draw_boxes(image, boxes, scores, show_scores=True):
     return img
 
 
+_ICON = {
+    "folder": '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+    "cube": '<path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="M3 7l9 5 9-5M12 12v10"/>',
+    "play": '<rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9l5 3-5 3z"/>',
+    "share": '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>'
+             '<path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/>',
+}
+LINKS = [  # (title, subtitle, url, icon, accent colour)
+    ("Dataset", "Google Drive folder", DATASET_URL, "folder", "#22d3ee"),
+    ("Trained Model", "rcnn_model.pth", MODEL_URL, "cube", "#a78bfa"),
+    ("Demo Video", "Watch on YouTube", VIDEO_URL, "play", "#f87171"),
+    ("LinkedIn Post", "Project announcement", LINKEDIN_URL, "share", "#60a5fa"),
+]
+
+
+def link_tiles(where):
+    tiles = []
+    for title, sub, url, icon, color in LINKS:
+        svg = (f'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="{color}" '
+               f'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{_ICON[icon]}</svg>')
+        tiles.append(
+            f'<a class="lt lt-{where}" href="{url}" target="_blank" rel="noopener" style="--ac:{color}">'
+            f'<span class="lt-ic">{svg}</span>'
+            f'<span class="lt-tx"><b>{title}</b><small>{sub}</small></span>'
+            f'<span class="lt-ar">↗</span></a>'
+        )
+    return f'<div class="lt-wrap lt-wrap-{where}">' + "".join(tiles) + "</div>"
+
+
 def metric(col, label, value):
     col.markdown(
         f'<div class="metric-card"><div class="label">{label}</div><div class="value">{value}</div></div>',
@@ -195,12 +244,11 @@ with st.sidebar:
 <div class="side-card"><b>Framework</b><br>PyTorch / Torchvision</div>
 <div class="side-card"><b>Detects</b><br>Person (all people in the image)</div>
 <div class="side-card"><b>Training</b><br>Fine-tuned on a custom person dataset</div>
-<div class="side-card"><b>Dataset</b><br><a href="{DATASET_URL}" target="_blank" rel="noopener">📂 Open dataset on Google Drive ↗</a></div>
-<div class="side-card"><b>Trained model</b><br><a href="{MODEL_URL}" target="_blank" rel="noopener">🧠 rcnn_model.pth on Google Drive ↗</a></div>
-<div class="side-card"><b>Demo video</b><br><a href="{VIDEO_URL}" target="_blank" rel="noopener">▶ Watch on YouTube ↗</a></div>
-""".replace("{DATASET_URL}", DATASET_URL).replace("{MODEL_URL}", MODEL_URL).replace("{VIDEO_URL}", VIDEO_URL),
+""",
         unsafe_allow_html=True,
     )
+    st.markdown("### 🔗 Project Links")
+    st.markdown(link_tiles("side"), unsafe_allow_html=True)
     st.markdown("### 📌 How it works")
     st.caption("1. Region Proposal Network suggests candidate regions.\n\n"
                "2. ROI head classifies each region and refines the box.\n\n"
@@ -212,18 +260,21 @@ with st.sidebar:
 st.markdown(
     f"""
 <div class="hero">
-  <span class="tag">AI · Computer Vision</span>
-  <h1>{PROJECT_TITLE}</h1>
-  <p>{PROJECT_SUBTITLE}. Upload a photo and every person is located with a bounding box.</p>
-  <div class="chips">
-    <span class="chip">⚡ Faster R-CNN</span><span class="chip">🧱 ResNet50-FPN</span>
-    <span class="chip">🔥 PyTorch</span><span class="chip">👤 Multi-person detection</span>
-  </div>
-  <div class="btn-row">
-    <a class="ds-btn" href="{DATASET_URL}" target="_blank" rel="noopener">📂 View Our Dataset ↗</a>
-    <a class="ds-btn ghost" href="{MODEL_URL}" target="_blank" rel="noopener">🧠 Trained Model (rcnn_model.pth) ↗</a>
-    <a class="ds-btn yt" href="{VIDEO_URL}" target="_blank" rel="noopener">▶ Watch Demo Video ↗</a>
-  </div>
+<div class="hero-grid">
+<div class="hero-main">
+<span class="tag">AI · Computer Vision</span>
+<h1>{PROJECT_TITLE}</h1>
+<p>{PROJECT_SUBTITLE}. Upload a photo and every person is located with a bounding box.</p>
+<div class="chips">
+<span class="chip">⚡ Faster R-CNN</span><span class="chip">🧱 ResNet50-FPN</span>
+<span class="chip">🔥 PyTorch</span><span class="chip">👤 Multi-person detection</span>
+</div>
+</div>
+<div class="res-panel">
+<div class="res-head">Project Resources</div>
+{link_tiles("hero")}
+</div>
+</div>
 </div>
 """,
     unsafe_allow_html=True,
